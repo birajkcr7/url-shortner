@@ -13,7 +13,9 @@ const NewShortURL = async(req,res)=>{
             visitHistory: [],
         })
         
-        return res.json({id: shortId});
+        return res.render("home",{
+            id: shortId,
+        })
     } catch (error) {
         console.log("url not created", error);
     }
@@ -22,15 +24,21 @@ const NewShortURL = async(req,res)=>{
 const urlById = async (req,res) => {
     try {
         const shortId = req.params.shortId;
-       const entry = await url.findOneAndUpdate({shortId},
+        const date = new Date();
+        const entry = await url.findOneAndUpdate({shortId},
             {$push:{
-                visitHistory: {timestamp : date.Now()},
+                visitHistory: {timestamp : date},
             }
-        })
+        });
+
+        if (!entry) {
+            return res.status(404).json({ msg: "URL not found" });
+        }
 
         res.redirect(entry.redirectURL);
     } catch (error) {
         console.log("error getting the url", error);
+        res.status(500).json({ msg: "Internal server error" });
     }
 }
 
