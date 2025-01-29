@@ -1,4 +1,6 @@
 const user = require("../model/users");
+const { v4: uuidv4} = require("uuid");
+const {setUser, getUser} = require("../service/auth");
 
 
 // for SIGNUP
@@ -9,7 +11,7 @@ const signUpPostreq = async(req,res) => {
         email,
         password,
     });
-    return res.render("home");
+    return res.redirect("/url");
 };
 
 const signUpGetreq = async(req,res) => {
@@ -17,13 +19,19 @@ const signUpGetreq = async(req,res) => {
 }
 
 // FOR LOGIN
-const loginPostreq  = async (req,res)=>{
+const loginPostreq  = async (req,res) => {
    const {email, password} =req.body;
-   const user = await user.findOne({email, password});
-   if(!user) return res.render("login",{
+   const userFound = await user.findOne({email, password});
+   if(!userFound) {
+    console.log("errorr username password")
+    return res.render("login",{
         error : "invalid usersname and password"
    });
-    return res.render("home")
+}
+    const sessionId = uuidv4()
+    setUser(sessionId, userFound);
+    res.cookie('uid', sessionId);
+    return res.redirect("/url");
 }
 
 const loginGetreq  = async (req,res)=>{
